@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "251194344152",
+    "project_id": "tito-mobile",
+    "storage_bucket": "tito-mobile.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:251194344152:android:e31893056f6dbebb0f0dad",
+        "android_client_info": {
+          "package_name": "tg.tmye.tito_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "251194344152-b30pfrk0ml7rme6kbtkk1jddma96bu7g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcQNdEssVTJoATw3icKVpEcLK0mbr0bsA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "251194344152-b30pfrk0ml7rme6kbtkk1jddma96bu7g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
