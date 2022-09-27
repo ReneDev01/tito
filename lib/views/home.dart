@@ -20,7 +20,7 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
           backgroundColor: appBlackColor,
           title: Text(
-            "",
+            "Tito Togo",
             textAlign:TextAlign.center,
             style: GoogleFonts.poppins(
               color: appBackground,

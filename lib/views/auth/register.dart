@@ -2,12 +2,13 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 import 'package:tito/components/constante.dart';
 import 'package:tito/controllers/client_controller.dart';
-import 'package:tito/models/Client.dart';
+import 'package:tito/models/client.dart';
 import 'package:tito/models/api_response.dart';
 import 'package:tito/views/auth/login.dart';
-import 'package:tito/views/navigation.dart';
+import 'package:tito/views/auth/validate.dart';
 
 class Register extends StatefulWidget {
   Register({Key? key}) : super(key: key);
@@ -23,26 +24,20 @@ class _RegisterState extends State<Register> {
   final passwordText = TextEditingController();
 
   bool loading = false;
-
   void _registerClient() async {
     ApiResponse response = await createClient(
         usernameText.text, phone_numberText.text, passwordText.text);
-        print(response.error);
+    var data = response.data as Map;
+    String request_code = data["request_code"];
+    print(request_code);
     if (response.error == null) {
-      _saveAndRedirect(response.data as Client);
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => Validate(request_code: request_code)),
+          (route) => false);
     } else {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('${response.error}')));
     }
-  }
-
-  void _saveAndRedirect(Client client) async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    await pref.setString('token', client.token ?? '');
-    await pref.setInt('clientId', client.id ?? 0);
-    Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => Navigation()),
-        (route) => false);
   }
 
   @override
@@ -52,7 +47,7 @@ class _RegisterState extends State<Register> {
         appBar: AppBar(
           backgroundColor: appBlackColor,
           title: Text(
-            "S'enrégistrer",
+            "Tito Togo",
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               color: appBackground,
@@ -151,25 +146,26 @@ class _RegisterState extends State<Register> {
                                                     .size
                                                     .height *
                                                 0.03),
-                                        myPasswordTextFormField(
-                                          //passenable = true,
-                                          appBlackColor,
-                                          Colors.white12,
-                                          appColor,
-                                          "Entrez-votre login",
-                                          passwordText,
-                                        )
+                                        myPassTextFormField(
+                                            appBlackColor,
+                                            Colors.white12,
+                                            appColor,
+                                            "Entrez-votre Telephone",
+                                            passwordText,
+                                            'Mot de passe'),
                                       ],
                                     ))),
                             SizedBox(
                                 height:
                                     MediaQuery.of(context).size.height * 0.04),
                             Container(
+                              width: MediaQuery.of(context).size.width,
                               child: myFlatButton(appBlackColor, Colors.white,
-                                  "S'enrégistrer", appBlackColor, () {
+                                  "S'enrégistrer", appBlackColor, () async {
                                 if (_formKey.currentState!.validate()) {
                                   _registerClient();
                                 }
+                                ;
                               }),
                             ),
                             SizedBox(

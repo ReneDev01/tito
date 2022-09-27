@@ -1,9 +1,15 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tito/components/constante.dart';
 import 'package:tito/views/auth/register.dart';
 import 'package:tito/views/navigation.dart';
+
+
+import '../../controllers/client_controller.dart';
+import '../../models/api_response.dart';
+import '../../models/client.dart';
 
 class Login extends StatefulWidget {
   Login({Key? key}) : super(key: key);
@@ -13,10 +19,31 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final _formKey = GlobalKey<FormState>();
-  final loginText = TextEditingController();
-  final passwordText = TextEditingController();
+  final phoneText = TextEditingController();
   bool passenable = true;
+
+  final _formKey = GlobalKey<FormState>();
+
+  void _loginClient() async {
+    ApiResponse response = await login(phoneText.text);
+    if (response.error == null) {
+      _saveAndRedirectToHome(response.data as Map);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('${response.error}'),
+      ));
+    }
+  }
+
+  void _saveAndRedirectToHome(Map data) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    await pref.setString('token', data["token"] ?? '');
+    await pref.setInt('clientId', data["client"]["id"] ?? 0);
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => Navigation()),
+        (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,7 +52,7 @@ class _LoginState extends State<Login> {
           backgroundColor: appBlackColor,
           title: Text(
             "Login",
-            textAlign:TextAlign.center,
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               color: appBackground,
               fontWeight: FontWeight.w500,
@@ -38,7 +65,6 @@ class _LoginState extends State<Login> {
             margin: EdgeInsets.all(20),
             child: Column(
               children: [
-                
                 Container(
                   alignment: Alignment.center,
                   child: Column(
@@ -102,31 +128,25 @@ class _LoginState extends State<Login> {
                               child: Column(
                                 children: [
                                   myInputTextFormField(
-                                      appBlackColor,
-                                      Colors.white12,
-                                      appColor,
-                                      "Entrez-votre login",
-                                      loginText, 'login',),
-                                  SizedBox(height:MediaQuery.of(context).size.height *0.03),
-                                  myPasswordTextFormField(
-                                    //passenable = true,
                                     appBlackColor,
                                     Colors.white12,
                                     appColor,
-                                    "Entrez-votre login",
-                                    passwordText,
-                                  )
+                                    "Entrez-votre numero",
+                                    phoneText,
+                                    'Numero',
+                                  ),
                                 ],
-                              )
-                            )
-                          ),
+                              ))),
                       SizedBox(
                           height: MediaQuery.of(context).size.height * 0.04),
                       Container(
+                        width: MediaQuery.of(context).size.width,
                         child: myFlatButton(appBlackColor, Colors.white,
                             'Se Connecter', appBlackColor, () {
-                              Navigator.of(context).push(MaterialPageRoute(builder:( context) => Navigation()));
-                            }),
+                          if (_formKey.currentState!.validate()) {
+                            _loginClient();
+                          }
+                        }),
                       ),
                       SizedBox(
                           height: MediaQuery.of(context).size.height * 0.04),

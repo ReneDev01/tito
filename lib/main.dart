@@ -1,6 +1,8 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tito/blocs/application_block.dart';
 import 'package:tito/components/constante.dart';
 //import 'package:tito/views/loading.dart';
 import 'package:tito/views/start.dart';
@@ -20,17 +22,19 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      useInheritedMediaQuery: true,
-      //locale: DevicePreview.locale(context),
-      theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: Colors.white, 
-          primaryColor: appColor
-        ),
-
-        //home: Loading(),
-        home: Start(),
+    return ChangeNotifierProvider(
+      create: (context) =>ApplicationBloc(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        useInheritedMediaQuery: true,
+        //locale: DevicePreview.locale(context),
+        theme: ThemeData.dark().copyWith(
+            scaffoldBackgroundColor: Colors.white, 
+            primaryColor: appColor
+          ),
+          //home: Loading(),
+          home: Start(),
+      ),
     );
   }
 }

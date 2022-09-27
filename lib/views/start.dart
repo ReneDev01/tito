@@ -75,6 +75,7 @@ class _StartState extends State<Start> {
                 Column(
                   children: [
                     Container(
+                      width: MediaQuery.of(context).size.width,
                       margin: EdgeInsets.only(left: 30, right: 30),
                       child: myFlatButton(appBlackColor, Colors.white, 'COMMENCER', appBlackColor, () {
                         _navigateToNextScreen(context);;

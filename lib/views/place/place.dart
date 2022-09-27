@@ -13,8 +13,6 @@ class Place extends StatefulWidget {
   State<Place> createState() => _PlaceState();
 }
 
-
-
 class _PlaceState extends State<Place> {
 
   final _formKey = GlobalKey<FormState>();
@@ -22,8 +20,6 @@ class _PlaceState extends State<Place> {
   final current_latitude_Text = TextEditingController();
   final current_longitude_Text = TextEditingController();
   final current_address_Text = TextEditingController();
-
-
 
   bool isVisible = false;
 
@@ -147,6 +143,7 @@ class _PlaceState extends State<Place> {
                               MediaQuery.of(context).size.height *
                                   0.005),
                         Container(
+                          width: MediaQuery.of(context).size.width,
                           child: myFlatButton(
                               appBlackColor,
                               Colors.white,
@@ -175,6 +172,5 @@ class _PlaceState extends State<Place> {
       ),
     );
   }
-
 
 }

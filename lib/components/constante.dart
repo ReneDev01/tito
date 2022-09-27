@@ -6,28 +6,33 @@ Color appColor = const Color(0xFF0a22ab);
 Color blue2 = const Color(0xFF2860af);
 Color blue3 = const Color(0xFF3071cd);
 Color appBackground = const Color(0xFFebf6fa);
-Color appBlackColor = const Color(0xFF061c33);
+Color appBlackColor = Color.fromARGB(255, 1, 19, 37);
 
 Color appIconFontColor1 = const Color(0xFFf6f2f1);
 Color appIconFontColor2 = const Color(0xFFe7f0f7);
 
-bool passenable = true;
+bool passenable = false;
 
-FlatButton myFlatButton(Color color, Color textColor, String text,
+TextButton myFlatButton(Color color, Color textColor, String text,
     Color borderColor, Function onPressed) {
-  return FlatButton(
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          side: BorderSide(color: borderColor)),
-      color: color,
-      textColor: textColor,
-      padding: EdgeInsets.all(15),
+  return TextButton(
+      style: TextButton.styleFrom(
+        shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30.0),
+        side: BorderSide(color: borderColor)),
+        backgroundColor: color,
+        padding: EdgeInsets.all(15),
+        minimumSize: Size(200, 30)
+      ),
       onPressed: () => onPressed(),
       child: Text(text,
           style:
-              GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.w600)),
-      minWidth: double.infinity);
+              GoogleFonts.poppins(
+                fontSize: 20, fontWeight: FontWeight.w600,color: textColor
+              )),
+      );
 }
+
 
 TextFormField myInputTextFormField(
     Color borderSideColor,
@@ -68,14 +73,16 @@ TextFormField myInputTextFormField(
   );
 }
 
-TextFormField myPasswordTextFormField(
+TextFormField myPassTextFormField(
     Color borderSideColor,
     Color fillColor,
     Color enableBorderColor,
     String labelText,
-    TextEditingController myController) {
+    TextEditingController myController,
+    String text,
+    ) {
   return TextFormField(
-    obscureText: passenable,
+    obscureText: true,
     decoration: InputDecoration(
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(30.0),
@@ -95,15 +102,17 @@ TextFormField myPasswordTextFormField(
       color: appBlackColor,
       fontSize: 15,
     ),
+    controller: myController,
     validator: (value) {
       if(value!.isEmpty){
-        return "Mot de passe invalide";
+        return " ${text} invalide";
       }else{
         return null;
       }
-    },
+    }
   );
 }
+
 
 DropdownButtonFormField myDropdownButton(Color borderSideColor, Color fillColor,
     Color enableBorderColor, String labelText, Function onChanged, List<DropdownMenuItem<dynamic>> items ) {
