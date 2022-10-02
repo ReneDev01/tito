@@ -150,7 +150,7 @@ class _RegisterState extends State<Register> {
                                             appBlackColor,
                                             Colors.white12,
                                             appColor,
-                                            "Entrez-votre Telephone",
+                                            "Entrez-votre mot de passe",
                                             passwordText,
                                             'Mot de passe'),
                                       ],

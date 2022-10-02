@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tito/components/constante.dart';
 import 'package:tito/controllers/client_controller.dart';
+import 'package:tito/views/auth/information.dart';
 import 'package:tito/views/navigation.dart';
 
 import '../../models/api_response.dart';
@@ -41,7 +42,7 @@ class _ValidateState extends State<Validate> {
     await pref.setString('token', data["token"] ?? '');
     await pref.setInt('clientId', data["client"]["id"] ?? 0);
     Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => Navigation()),
+        MaterialPageRoute(builder: (context) => Information()),
         (route) => false);
   }
 

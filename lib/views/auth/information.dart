@@ -21,6 +21,8 @@ class _InformationState extends State<Information> {
   void _addInformations() async {
     ApiResponse response =
         await infosCompleteClient(full_nameText.text, whatsap_numberText.text);
+    var data = response.data as Map;
+    print(data);
     if (response.error == null) {
       Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => Navigation()),
@@ -102,7 +104,7 @@ class _InformationState extends State<Information> {
                         child: myFlatButton(appBlackColor, Colors.white,
                             "S'enrégistrer", appBlackColor, () async {
                           if (_formKey.currentState!.validate()) {
-                            _addInformations;
+                            _addInformations();
                           }
                           ;
                         }),

@@ -20,12 +20,13 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final phoneText = TextEditingController();
+  final passwordText = TextEditingController();
   bool passenable = true;
 
   final _formKey = GlobalKey<FormState>();
 
   void _loginClient() async {
-    ApiResponse response = await login(phoneText.text);
+    ApiResponse response = await login(phoneText.text, passwordText.text);
     if (response.error == null) {
       _saveAndRedirectToHome(response.data as Map);
     } else {
@@ -135,6 +136,15 @@ class _LoginState extends State<Login> {
                                     phoneText,
                                     'Numero',
                                   ),
+                                  SizedBox(
+                                    height: MediaQuery.of(context).size.height *0.03),
+                                  myPassTextFormField(
+                                      appBlackColor,
+                                      Colors.white12,
+                                      appColor,
+                                      "Entrez-votre mot de passe",
+                                      passwordText,
+                                      'Mot de passe')
                                 ],
                               ))),
                       SizedBox(

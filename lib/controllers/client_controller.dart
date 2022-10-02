@@ -69,8 +69,6 @@ Future<ApiResponse> validatePhone(
       },
     );
 
-    print(response.body);
-
     switch (response.statusCode) {
       case 200:
         apiResponse.data = jsonDecode(response.body);
@@ -99,13 +97,14 @@ Future<ApiResponse> infosCompleteClient(
 
   try {
     String token = await getToken();
-    final response = await http.put(
+    print(token);
+    final response = await http.post(
       Uri.parse("http://145.239.198.239:8090/api/update-client"),
       headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
       body: {'full_name': full_name, 'whatsapp_number': whatsapp_number},
     );
-    
-    print(response.statusCode);
+
+    print(response.body);
     switch (response.statusCode) {
       case 200:
         apiResponse.data = jsonDecode(response.body);
@@ -128,7 +127,7 @@ Future<ApiResponse> infosCompleteClient(
   return apiResponse;
 }
 
-Future<ApiResponse> login(String phone_number) async {
+Future<ApiResponse> login(String phone_number, String password) async {
   ApiResponse apiResponse = ApiResponse();
   try {
     final response = await http.post(
@@ -136,7 +135,7 @@ Future<ApiResponse> login(String phone_number) async {
       headers: {
         'Accept': 'application/json',
       },
-      body: {'phone_number': phone_number},
+      body: {'phone_number': phone_number, 'password': password},
     );
 
     //switch response code status
@@ -151,6 +150,37 @@ Future<ApiResponse> login(String phone_number) async {
         break;
       case 403:
         apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+      default:
+        apiResponse.error = somethingWentWrong;
+        break;
+    }
+  } catch (e) {
+    apiResponse.error = serverError;
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> getClientDetails() async {
+  ApiResponse apiResponse = ApiResponse();
+
+  try {
+    String token = await getToken();
+    final response = await http
+        .get(Uri.parse("http://145.239.198.239:8090/api/user"), headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token'
+    });
+
+    print(response.body);
+
+    switch (response.statusCode) {
+      case 200:
+        apiResponse.data = jsonDecode(response.body);
+        break;
+      case 401:
+        apiResponse.error = unauthorized;
         break;
       default:
         apiResponse.error = somethingWentWrong;

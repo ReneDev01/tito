@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tito/controllers/client_controller.dart';
+import 'package:tito/models/api_response.dart';
 import 'package:tito/views/compte/history.dart';
 import 'package:tito/views/compte/infos.dart';
 import 'package:tito/views/compte/wallet.dart';
 
 import '../../components/constante.dart';
+import '../../models/client.dart';
 
 class Compte extends StatefulWidget {
   Compte({Key? key}) : super(key: key);
@@ -14,6 +17,26 @@ class Compte extends StatefulWidget {
 }
 
 class _CompteState extends State<Compte> {
+  String full_name = "";
+  String username = "";
+  String phone = "";
+  _getAuthClient() async {
+    ApiResponse response = await getClientDetails();
+    setState(() {
+      var client = response.data as Map;
+      full_name = client["full_name"];
+      username = client["username"];
+      phone = client["phone_number"];
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _getAuthClient();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,7 +203,7 @@ class _CompteState extends State<Compte> {
                           textAlign: TextAlign.justify,
                           overflow: TextOverflow.ellipsis,
                           text: TextSpan(
-                              text: 'Rene Komlan ',
+                              text: "${username} ",
                               style: GoogleFonts.poppins(
                                 fontSize: 25,
                                 fontWeight: FontWeight.w500,
@@ -189,7 +212,15 @@ class _CompteState extends State<Compte> {
                               ),
                               children: [
                                 TextSpan(
-                                  text: 'AHONBO',
+                                  text: "${full_name} ",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.w700,
+                                    color: appBlackColor,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: "${phone}",
                                   style: GoogleFonts.poppins(
                                     fontSize: 25,
                                     fontWeight: FontWeight.w500,

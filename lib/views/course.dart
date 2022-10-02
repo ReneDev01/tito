@@ -1,498 +1,145 @@
-import 'dart:async';
-
-import 'package:flutter/cupertino.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_api_headers/google_api_headers.dart';
-import 'package:provider/provider.dart';
-import 'package:tito/blocs/application_block.dart';
-
-import '../components/constante.dart';
-import '../models/place.dart';
+import 'package:tito/components/constante.dart';
+import 'package:tito/views/course_information.dart';
 
 class Course extends StatefulWidget {
-  Course({Key? key}) : super(key: key);
+  const Course({Key? key}) : super(key: key);
 
   @override
   State<Course> createState() => _CourseState();
 }
 
-const kGoogleAPIKey = '5e7e4296198256f1538e6e88454cdcae';
+const kGoogleApiKey = 'AIzaSyC9AWx_hS2Ly4fF6PQOEMM6mlcevpMSYDE';
 final homeScaffoldKey = GlobalKey<ScaffoldState>();
 
 class _CourseState extends State<Course> {
-  final _formKey = GlobalKey<FormState>();
-  final current_place_Text = TextEditingController();
-  final arrived_place_Text = TextEditingController();
-  final current_latitude_Text = TextEditingController();
-  final current_longitude_Text = TextEditingController();
-  final current_address_Text = TextEditingController();
-  Completer<GoogleMapController> _mapController = Completer();
-  late StreamSubscription locationSubscription;
+  static const CameraPosition initialCameraPosition =
+      CameraPosition(target: LatLng(6.196146, 1.200136), zoom: 14.0);
 
-  late StreamSubscription boundsSubscription;
-  
+  Set<Marker> markersList = {};
 
-  @override
-  void initState(){
-    final applicationBloc = Provider.of<ApplicationBloc>(context, listen: false);
-    locationSubscription = applicationBloc.selectedLocation.stream.listen((place) {
-      if(place != null){
-        _goToPlace(place);
-      }
-    });
+  late GoogleMapController googleMapController;
 
-    boundsSubscription = applicationBloc.bounds.stream.listen((bounds) async { 
-      final GoogleMapController controller = await _mapController.future;
+  final Mode _mode = Mode.overlay;
 
-      controller.animateCamera(
-        CameraUpdate.newLatLngBounds(bounds, 50.0)
-      );
-    });
+  double lati = 0;
+  double long = 0;
 
-    super.initState();
+  Future<void> _handlePressButton() async {
+    Prediction? p = await PlacesAutocomplete.show(
+        context: context,
+        apiKey: kGoogleApiKey,
+        onError: onError,
+        mode: _mode,
+        language: 'fr',
+        strictbounds: false,
+        types: [""],
+        decoration: InputDecoration(
+            hintText: 'Search',
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: BorderSide(color: appBlackColor))),
+        components: [Component(Component.country, "tg")]);
+    displayPrediction(p!, homeScaffoldKey.currentState);
   }
 
-  @override
-  void dispose(){
-    final applicationBloc = Provider.of<ApplicationBloc>(context, listen: false);
-    applicationBloc.dispose();
-    boundsSubscription.cancel();
-    locationSubscription.cancel();
-    super.dispose();
-  }
-
-
-
-  bool isVisible = false;
-
-  List<DropdownMenuItem<String>> get placeItems {
-    List<DropdownMenuItem<String>> infos = [
-      DropdownMenuItem(
-        child: Text("USA"),
-        value: "USA",
+  void onError(PlacesAutocompleteResponse response) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      elevation: 0,
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.transparent,
+      content: AwesomeSnackbarContent(
+        title: 'Message',
+        message: response.errorMessage!,
+        contentType: ContentType.failure,
       ),
-      DropdownMenuItem(
-        child: Text("Canada"),
-        value: "Canada",
-      ),
-      DropdownMenuItem(
-        child: Text("France"),
-        value: "France",
-      ),
-    ];
-    return infos;
+    ));
+
+    // homeScaffoldKey.currentState!.showSnackBar(SnackBar(content: Text(response.errorMessage!)));
   }
 
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  Future<void> displayPrediction(
+      Prediction p, ScaffoldState? currentState) async {
+    GoogleMapsPlaces places = GoogleMapsPlaces(
+        apiKey: kGoogleApiKey,
+        apiHeaders: await const GoogleApiHeaders().getHeaders());
 
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      await Geolocator.openLocationSettings();
-      return Future.error('Location services are disabled.');
-    }
+    PlacesDetailsResponse detail = await places.getDetailsByPlaceId(p.placeId!);
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
+    final lat = detail.result.geometry!.location.lat;
+    final lng = detail.result.geometry!.location.lng;
 
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-    return await Geolocator.getCurrentPosition();
-  }
+    lati = lat;
+    long = lng;
 
-  Future<void> GetAdressFromLatLong(Position position) async {
-    List<Placemark> placemark =
-        await placemarkFromCoordinates(position.latitude, position.longitude);
-    print(placemark);
+    markersList.clear();
+    markersList.add(Marker(
+        markerId: const MarkerId("0"),
+        position: LatLng(lat, lng),
+        infoWindow: InfoWindow(title: detail.result.name)));
+
     setState(() {});
+
+    googleMapController
+        .animateCamera(CameraUpdate.newLatLngZoom(LatLng(lat, lng), 14.0));
+    //setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final applicationBloc = Provider.of<ApplicationBloc>(context);
     return Scaffold(
-      backgroundColor: appBackground,
+      key: homeScaffoldKey,
+      //backgroundColor: appBackground,
       appBar: AppBar(
-          backgroundColor: appBlackColor,
-          title: Text(
-            "Tito Togo",
-            textAlign:TextAlign.center,
-            style: GoogleFonts.poppins(
-              color: appBackground,
-              fontWeight: FontWeight.w500,
-              fontSize: 20,
-            ),
-          ),
-      ),
-      body:(applicationBloc.currentLocation == null) 
-      ? Center(
-          child: CircularProgressIndicator(),
-        )
-      : SingleChildScrollView(
-        child: Container(
-          margin: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top:8, bottom:8),
-                child: TextField(
-                  style: GoogleFonts.poppins(
-                    color: appBlackColor,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  decoration: InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: appBlackColor),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: appBlackColor,
-                      ),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    hintText: "Où allez-vous??",
-                    hintStyle: GoogleFonts.poppins(
-                      color: appBlackColor,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    suffixIcon: Icon(Icons.search, color: appBlackColor),
-                  ),
-                  onChanged: (value) => applicationBloc.searchPlace(value),
-                ),
-              ),
-              Stack(
-                children: [
-                  Container(
-                    height: 300,
-                    child: GoogleMap(
-                      mapType: MapType.normal,
-                      myLocationEnabled: true,
-                      markers: Set<Marker>.of(applicationBloc.markers),
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(
-                          applicationBloc.currentLocation.latitude, 
-                          applicationBloc.currentLocation.longitude
-                        ),
-                        zoom: 14,
-                      ),
-                      onMapCreated: (GoogleMapController controller){
-                        _mapController.complete(controller);
-                      },
-                    ),
-                  ),
-                  if(applicationBloc.searchResults != null && 
-                  applicationBloc.searchResults.length != 0)
-                  Container(
-                    height: 300,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(.5),
-                      backgroundBlendMode: BlendMode.darken
-                    ),
-                  ),
-                  if(applicationBloc.searchResults != null && 
-                  applicationBloc.searchResults.length != 0)
-                  Container(
-                    height: 300,
-                    child: ListView.builder(
-                      itemCount: applicationBloc.searchResults.length,
-                      itemBuilder: (context, index){
-                        return ListTile(
-                          title: Text(
-                            applicationBloc.searchResults[index].description!,
-                            style: TextStyle(
-                              color: Colors.white
-                            ),
-                          ),
-                          onTap: (){
-                            applicationBloc.setSelecetedLocation(
-                              applicationBloc.searchResults[index].place_id!
-                            );
-                          },
-                        );
-                      } ,
-                    ),
-                  ) 
-                ],
-              ),
-              /* SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-              Padding(
-                padding: EdgeInsets.only(top:8, bottom: 8),
-                child: Text(
-                  "Trouver une place",
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: appBlackColor,
-                  ),
-                ),
-              ), */
-              SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-              /* Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 8),
-                child: Wrap(
-                  spacing: 8.0,
-                  children: [
-                    FilterChip(
-                      label:Text('Campground'),
-                      onSelected: (val) => 
-                      applicationBloc.togglePlaceType('campground', val),
-                      selected: applicationBloc.placeType == 'campground',
-                      selectedColor: appColor,
-                    ),
-                    FilterChip(
-                      label:Text('ATM'),
-                      onSelected: (val) => 
-                      applicationBloc.togglePlaceType('atm', val),
-                      selected: applicationBloc.placeType == 'atm',
-                      selectedColor: appColor,
-                    ),
-                    FilterChip(
-                      label:Text('phamarcy'),
-                      onSelected: (val) => 
-                      applicationBloc.togglePlaceType('phamarcy', val),
-                      selected: applicationBloc.placeType == 'phamarcy',
-                      selectedColor: appColor,
-                    ),FilterChip(
-                      label:Text('zoo'),
-                      onSelected: (val) => 
-                      applicationBloc.togglePlaceType('zoo', val),
-                      selected: applicationBloc.placeType == 'zoo',
-                      selectedColor: appColor,
-                    )
-                  ],
-                ),
-              ), */
-/*               Container(
-                height: MediaQuery.of(context).size.height * 0.14,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
-                  color: appColor,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(left: 20),
-                      child: Text("Où allez-vous?  ",
-                          style: GoogleFonts.poppins(
-                              fontSize: 25,
-                              color: appBackground,
-                              fontWeight: FontWeight.w500)),
-                    ),
-                    Icon(
-                      Icons.arrow_forward,
-                      color: appBackground,
-                      size: 40,
-                    )
-                  ],
-                ),
-              ), */
-              SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-              Container(
-                child: Column(
-                  children: [
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                          text: 'Commander votre moto ',
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                            letterSpacing: 1,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: 'tit',
-                              style: GoogleFonts.poppins(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w700,
-                                color: appColor,
-                              ),
-                            ),
-                            TextSpan(
-                              text: 'o',
-                              style: GoogleFonts.poppins(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w700,
-                                color: appBlackColor,
-                              ),
-                            ),
-                          ]),
-                    ),
-                    Container(
-                      child: Column(
-                        children: [
-                          Row(),
-                          Container(
-                            child: Column(
-                              children: [
-                                Form(
-                                    key: _formKey,
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          "Lieux de départ",
-                                          textAlign: TextAlign.left,
-                                          style: GoogleFonts.poppins(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w600,
-                                              color: appBlackColor),
-                                        ),
-                                        SizedBox(
-                                            height:
-                                                MediaQuery.of(context).size.height *
-                                                    0.02),
-                                        myInputTextFormField(
-                                            appBlackColor,
-                                            Colors.white12,
-                                            appColor,
-                                            "Où êtes-vous? (Ex: A côté de 2 lions)",
-                                            current_place_Text, 'Actuel place',),
-                                            
-                                        SizedBox(
-                                            height:
-                                                MediaQuery.of(context).size.height *
-                                                    0.02),
-                                        Visibility(
-                                            visible: isVisible,
-                                            child: Container(
-                                              child: Column(
-                                                children: [
-                                                  myInputTextFormField(
-                                                      appBlackColor,
-                                                      Colors.white12,
-                                                      appColor,
-                                                      "latitude",
-                                                      current_latitude_Text, 'latitude',),
-                                                  SizedBox(
-                                                      height: MediaQuery.of(context)
-                                                              .size
-                                                              .height *
-                                                          0.02),
-                                                  myInputTextFormField(
-                                                      appBlackColor,
-                                                      Colors.white12,
-                                                      appColor,
-                                                      "longitude",
-                                                      current_longitude_Text, 'longitude',),
-                                                ],
-                                              ),
-                                            )
-                                        ),
-                                        SizedBox(
-                                            height:
-                                                MediaQuery.of(context).size.height *
-                                                    0.005),
-                                        Container(
-                                          width: MediaQuery.of(context).size.width,
-                                          child: myFlatButton(
-                                              appBlackColor,
-                                              Colors.white,
-                                              'Prendre ma position',
-                                              appBlackColor, () async {
-                                            Position position =
-                                                await _determinePosition();
-
-                                            print(position.longitude);
-                                            print(position.latitude);
-                                            /* location =
-                                                'Lat : ${position.latitude}, Long:${position.longitude}'; */
-                                            GetAdressFromLatLong(position);
-                                            setState(() {});
-                                          }),
-                                        ),
-                                        SizedBox(
-                                            height:
-                                                MediaQuery.of(context).size.height *
-                                                    0.005),
-                                        Text(
-                                          "- Ou -",
-                                          textAlign: TextAlign.center,
-                                          style: GoogleFonts.poppins(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w500,
-                                              color: appBlackColor),
-                                        ),
-                                        SizedBox(
-                                            height:
-                                                MediaQuery.of(context).size.height *
-                                                    0.005),
-                                        myDropdownButton(
-                                            appBlackColor,
-                                            Colors.white12,
-                                            appColor,
-                                            "Cliquer pour selectioner un lieux",
-                                            () {},
-                                            placeItems),
-                                        SizedBox(
-                                            height:
-                                                MediaQuery.of(context).size.height *
-                                                    0.02),
-                                        Text(
-                                          "Lieux d'arrivé",
-                                          textAlign: TextAlign.left,
-                                          style: GoogleFonts.poppins(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.w600,
-                                              color: appBlackColor),
-                                        ),
-                                        SizedBox(
-                                            height:
-                                                MediaQuery.of(context).size.height *
-                                                    0.02),
-                                        myInputTextFormField(
-                                            appBlackColor,
-                                            Colors.white12,
-                                            appColor,
-                                            "Où deplacez-vous? (Ex: Vers agbalépédo à coté de ....)",
-                                            arrived_place_Text, 'Arrivée',),
-                                      ],
-                                    )
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],
+        backgroundColor: appBlackColor,
+        title: Text(
+          "Tito Togo",
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            color: appBackground,
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
           ),
         ),
       ),
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: initialCameraPosition,
+            markers: markersList,
+            mapType: MapType.normal,
+            onMapCreated: (GoogleMapController controller) {
+              googleMapController = controller;
+            },
+          ),
+          Container(
+            margin: EdgeInsets.all(20),
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(primary: appBlackColor),
+                    onPressed: _handlePressButton,
+                    child: const Text("Où allez-vous?"),
+                  ),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(primary: appColor),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => Detail(latitude:lati, longitude:long)),
+                            );
+                      },
+                      child: const Text("Suivant")),
+                ]),
+          )
+        ],
+      ),
     );
   }
-
-  Future<void> _goToPlace(Place place) async{
-    final GoogleMapController controller = await _mapController.future;
-    controller.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(target: LatLng(place.geometry!.location.lat!, place.geometry!.location.lng!), 
-        zoom: 14)
-      )
-    );
-  }
-
 }
