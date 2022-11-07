@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tito/controllers/client_controller.dart';
 import 'package:tito/models/api_response.dart';
 import 'package:tito/views/compte/history.dart';
 import 'package:tito/views/compte/infos.dart';
+import 'package:tito/views/compte/place/adress_list.dart';
+import 'package:tito/views/compte/place/my_map.dart';
+import 'package:tito/views/compte/place/place.dart';
 import 'package:tito/views/compte/wallet.dart';
 
 import '../../components/constante.dart';
@@ -20,6 +24,8 @@ class _CompteState extends State<Compte> {
   String full_name = "";
   String username = "";
   String phone = "";
+  double latitude = 0.0;
+  double longitude = 0.0;
   _getAuthClient() async {
     ApiResponse response = await getClientDetails();
     setState(() {
@@ -30,9 +36,44 @@ class _CompteState extends State<Compte> {
     });
   }
 
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    return await Geolocator.getCurrentPosition();
+  }
+
+  Future<void> _getPosition() async {
+    Position position = await _determinePosition();
+    latitude = position.latitude;
+    longitude = position.longitude;
+    setState(() {});
+  }
+
   @override
   void initState() {
     // TODO: implement initState
+    _getPosition();
     _getAuthClient();
     super.initState();
   }
@@ -64,8 +105,8 @@ class _CompteState extends State<Compte> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => Infos()));
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const AdressList()));
                         },
                         child: Container(
                           height: 90,
@@ -81,7 +122,7 @@ class _CompteState extends State<Compte> {
                                 child: Column(
                                   children: [
                                     Icon(
-                                      Icons.settings,
+                                      Icons.location_on_rounded,
                                       size: 35,
                                       color: appBlackColor,
                                     ),
@@ -90,7 +131,7 @@ class _CompteState extends State<Compte> {
                                             MediaQuery.of(context).size.height *
                                                 0.02),
                                     Text(
-                                      "Infos",
+                                      "Adresse",
                                       style: GoogleFonts.poppins(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w400,
@@ -251,7 +292,13 @@ class _CompteState extends State<Compte> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => MyMap(
+                              latitude: latitude,
+                              longitude: longitude,
+                            )));
+                  },
                   child: Container(
                     child: Row(
                       //mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -267,6 +314,34 @@ class _CompteState extends State<Compte> {
                           margin: EdgeInsets.only(left: 20),
                           child: Text(
                             "Consulter mes messages",
+                            style: GoogleFonts.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                                color: appBlackColor),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    child: Row(
+                      //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          child: Icon(
+                            Icons.location_on_rounded,
+                            size: 40,
+                            color: appBlackColor,
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(left: 20),
+                          child: Text(
+                            "Nouvelle adresse",
                             style: GoogleFonts.poppins(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w400,

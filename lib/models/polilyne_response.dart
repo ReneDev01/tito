@@ -2,7 +2,7 @@ class PolylineResponse {
   List<GeocodedWaypoints>? geocodedWaypoints;
   List<Routes>? routes;
   String? status;
-
+  
   PolylineResponse({this.geocodedWaypoints, this.routes, this.status});
 
   PolylineResponse.fromJson(Map<String, dynamic> json) {

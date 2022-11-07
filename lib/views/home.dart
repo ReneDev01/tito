@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tito/components/constante.dart';
 import 'package:tito/views/compte/compte.dart';
-import 'package:tito/views/course.dart';
+import 'package:tito/views/courses/course.dart';
 
 class Home extends StatefulWidget {
   Home({Key? key}) : super(key: key);
@@ -56,13 +56,11 @@ class _HomeState extends State<Home> {
                     Icon(
                       Icons.arrow_forward, color: appBackground,
                       size: 40,
-                    )
+                    ),
+                    
                   ],
                 ),
               ),
-              Container(
-                
-              )
             ],
           ),
         ),

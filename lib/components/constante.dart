@@ -33,6 +33,26 @@ TextButton myFlatButton(Color color, Color textColor, String text,
       );
 }
 
+TextButton myFlatButton2(Color color, Color textColor, String text,
+    Color borderColor, Function onPressed) {
+  return TextButton(
+      style: TextButton.styleFrom(
+        shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30.0),
+        side: BorderSide(color: borderColor)),
+        backgroundColor: color,
+        padding: EdgeInsets.all(15),
+        minimumSize: Size(100, 18)
+      ),
+      onPressed: () => onPressed(),
+      child: Text(text,
+          style:
+              GoogleFonts.poppins(
+                fontSize: 15, fontWeight: FontWeight.w600,color: textColor
+              )),
+      );
+}
+
 
 TextFormField myInputTextFormField(
     Color borderSideColor,
@@ -70,6 +90,38 @@ TextFormField myInputTextFormField(
         return null;
       }
     }
+  );
+}
+
+TextFormField newInputTextFormField(
+    Color borderSideColor,
+    Color fillColor,
+    Color enableBorderColor,
+    String labelText,
+    TextEditingController myController,
+    String text,
+    ) {
+  return TextFormField(
+    decoration: InputDecoration(
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30.0),
+        borderSide: BorderSide(color: borderSideColor, width: 2.0),
+      ),
+      labelText: labelText,
+      labelStyle: GoogleFonts.poppins(
+          fontSize: 15, color: appBlackColor, fontWeight: FontWeight.w400),
+      filled: true,
+      fillColor: fillColor,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(30.0),
+        borderSide: BorderSide(color: enableBorderColor, width: 2.0),
+      ),
+    ),
+    style: GoogleFonts.poppins(
+      color: appBlackColor,
+      fontSize: 15,
+    ),
+    controller: myController,
   );
 }
 

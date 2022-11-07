@@ -7,7 +7,7 @@ import 'package:tito/bloc/geolocation/geolocation_bloc.dart';
 import 'package:tito/components/constante.dart';
 import 'package:tito/controllers/location_controller.dart';
 import 'package:tito/repository/geolocation_repository.dart';
-import 'package:tito/views/course.dart';
+import 'package:tito/views/courses/course.dart';
 //import 'package:tito/views/loading.dart';
 import 'package:tito/views/start.dart';
 
