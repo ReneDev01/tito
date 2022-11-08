@@ -81,13 +81,13 @@ class _CourseEndAdressState extends State<CourseEndAdress> {
     }
   }
 
-  void removeItemFromLocalStorage() {
+  /* void removeItemFromLocalStorage() {
     storage.deleteItem('latStart');
     storage.deleteItem('lngStart');
     storage.deleteItem('data');
     storageSecondAdress.deleteItem('id');
     storageSecondAdress.deleteItem('cmdAdressArv');
-  }
+  } */
 
   @override
   void initState() {
@@ -281,7 +281,7 @@ class _CourseEndAdressState extends State<CourseEndAdress> {
                   startLng.text = "${lng_start}";
                   end_address_id.text = arvId.toString();
                   _registerTrip();
-                  removeItemFromLocalStorage();
+                  //removeItemFromLocalStorage();
                 }),
               ),
             ],

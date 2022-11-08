@@ -5,23 +5,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:tito/views/courses/resumer.dart';
 
 import '../../components/constante.dart';
-import '../../controllers/client_controller.dart';
+import '../../controllers/adress_local_storage.dart';
+import '../../controllers/locale_start_point.dart';
 import '../../controllers/locale_store.dart';
+import '../../controllers/strict_local_storage.dart';
 import '../../controllers/trip_controller.dart';
 import '../../models/api_response.dart';
-import 'package:localstorage/localstorage.dart';
 
-import 'package:http/http.dart' as http;
-
-class CourseAdress extends StatefulWidget {
-  const CourseAdress({super.key});
+class AdressNeighboord extends StatefulWidget {
+  const AdressNeighboord({super.key});
 
   @override
-  State<CourseAdress> createState() => _CourseAdressState();
+  State<AdressNeighboord> createState() => _AdressNeighboordState();
 }
 
-class _CourseAdressState extends State<CourseAdress> {
-  final LocalStorage storageAdress = LocalStorage('localstorage_app');
+class _AdressNeighboordState extends State<AdressNeighboord> {
   final _formKey = GlobalKey<FormState>();
   final startDescription = TextEditingController();
   final endDescription = TextEditingController();
@@ -35,20 +33,16 @@ class _CourseAdressState extends State<CourseAdress> {
   final district_id = TextEditingController();
 
   bool isVisible = false;
-
-  late double lat_start = 0;
-  late double lng_start = 0;
-  late double lat_end = 0.0;
-  late double lng_end = 0.0;
+  int striId = 0;
   int strId = 0;
 
-  void getCourseMapsInformation() {
-    Map<String, dynamic> info = json.decode(save.getItem('info'));
-    lat_end = info['latEnd'];
-    lng_end = info['lngEnd'];
+  void getDistrictId() {
+    Map<String, dynamic> cmdStrict =
+        json.decode(storageStrict.getItem('cmdStrict'));
+    print(cmdStrict);
+    striId = cmdStrict['id'];
 
     setState(() {});
-    print(info);
   }
 
   void getAdressId() {
@@ -66,34 +60,33 @@ class _CourseAdressState extends State<CourseAdress> {
       startDescription.text,
       endDescription.text,
       {"lat": 0.0, "lng": 0.0},
-      {"lat": endLat.text, "lng": endLng.text},
+      {"lat": 0.0, "lng": 0.0},
       district_id.text,
       start_address_id.text,
       end_address_id.text,
     );
-
     if (response.error == null) {
-    print(response.data);
-    Navigator.of(context)
+      var data = response.data as Map;
+      print(data);
+      Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => Resumer()));
     } else {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${response.error}'))); 
+          .showSnackBar(SnackBar(content: Text('${response.error}')));
     }
   }
 
   /* void removeItemFromLocalStorage() {
-    save.deleteItem('latEnd');
-    save.deleteItem('lngEnd');
-    save.deleteItem('info');
     storageAdress.deleteItem('id');
     storageAdress.deleteItem('cmdAdress');
+    storageStrict.deleteItem('id');
+    storageStrict.deleteItem('cmdStrict');
   } */
 
   @override
   void initState() {
     getAdressId();
-    getCourseMapsInformation();
+    getDistrictId();
     super.initState();
   }
 
@@ -261,7 +254,7 @@ class _CourseAdressState extends State<CourseAdress> {
                                           "end district",
                                           end_address_id,
                                           'end district',
-                                        )
+                                        ),
                                       ],
                                     ),
                                   )),
@@ -278,9 +271,8 @@ class _CourseAdressState extends State<CourseAdress> {
                 child: myFlatButton(
                     appBlackColor, Colors.white, 'Commander', appBlackColor,
                     () {
-                  endLat.text = "${lat_end}";
-                  endLng.text = "${lng_end}";
                   start_address_id.text = strId.toString();
+                  district_id.text = striId.toString();
                   _registerTrip();
                   //removeItemFromLocalStorage();
                 }),

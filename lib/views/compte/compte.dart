@@ -293,11 +293,7 @@ class _CompteState extends State<Compte> {
                 SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                 GestureDetector(
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => MyMap(
-                              latitude: latitude,
-                              longitude: longitude,
-                            )));
+                    
                   },
                   child: Container(
                     child: Row(
@@ -326,7 +322,13 @@ class _CompteState extends State<Compte> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => MyMap(
+                              latitude: latitude,
+                              longitude: longitude,
+                            )));
+                  },
                   child: Container(
                     child: Row(
                       //mainAxisAlignment: MainAxisAlignment.spaceBetween,

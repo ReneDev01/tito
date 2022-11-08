@@ -35,7 +35,7 @@ Future<ApiResponse> makeTrip(
           'start_address_id': start_address_id,
           'end_address_id': end_address_id,
         }));
-    print(response.body);
+    //print(response.body);
     switch (response.statusCode) {
       case 201:
         apiResponse.data = jsonDecode(response.body);
@@ -55,7 +55,7 @@ Future<ApiResponse> makeTrip(
         break;
     }
   } catch (e) {
-    print(e);
+    //print(e);
     apiResponse.error = serverError;
   }
 

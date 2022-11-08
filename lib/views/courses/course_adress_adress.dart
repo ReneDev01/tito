@@ -80,12 +80,12 @@ class _CoureseTwoAdressState extends State<CoureseTwoAdress> {
     }
   }
 
-  void removeItemFromLocalStorage() {
+  /* void removeItemFromLocalStorage() {
     storageSecondAdress.deleteItem('id');
     storageSecondAdress.deleteItem('cmdAdressArv');
     storageAdress.deleteItem('id');
     storageAdress.deleteItem('cmdAdress');
-  }
+  } */
 
   @override
   void initState() {
@@ -278,7 +278,7 @@ class _CoureseTwoAdressState extends State<CoureseTwoAdress> {
                   start_address_id.text = strId.toString();
                   end_address_id.text = arvId.toString();
                   _registerTrip();
-                  removeItemFromLocalStorage();
+                  //removeItemFromLocalStorage();
                 }),
               ),
             ],

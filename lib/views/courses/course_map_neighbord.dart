@@ -76,13 +76,13 @@ class _MapNeighboordState extends State<MapNeighboord> {
     }
   }
 
-  void removeItemFromLocalStorage() {
+  /* void removeItemFromLocalStorage() {
     storage.deleteItem('latStart');
     storage.deleteItem('lngStart');
     storage.deleteItem('data');
     storageStrict.deleteItem('id');
     storageStrict.deleteItem('cmdStrict');
-  }
+  } */
 
   @override
   void initState() {
@@ -277,7 +277,7 @@ class _MapNeighboordState extends State<MapNeighboord> {
                   startLng.text = "${lng_start}";
                   district_id.text = striId.toString();
                   _registerTrip();
-                  removeItemFromLocalStorage();
+                  //removeItemFromLocalStorage();
                 }),
               ),
             ],

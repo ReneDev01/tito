@@ -16,8 +16,8 @@ class StartCourse extends StatefulWidget {
 }
 
 class _StartCourseState extends State<StartCourse> {
-  double latitude =  0;
-  double longitude = 0 ;
+  double latitude = 0;
+  double longitude = 0;
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -73,10 +73,12 @@ class _StartCourseState extends State<StartCourse> {
                 height: 60,
                 margin: EdgeInsets.only(left: 10, right: 10),
                 child: myFlatButton2(appBackground, appBlackColor,
-                    'Choisir une adresse', appColor, () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const Address()));
-                }),
+                    'Choisir une adresse', appColor, () 
+                    async {
+                      Navigator.pop(context);
+                      await Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const Address()));
+                    }),
               ),
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.02,
@@ -86,22 +88,23 @@ class _StartCourseState extends State<StartCourse> {
                 height: 60,
                 margin: EdgeInsets.only(left: 10, right: 10),
                 child: myFlatButton2(
-                    appColor, Colors.white, 'Nouvelle addresse', appColor, () {
+                    appColor, Colors.white, 'Nouvelle addresse', appColor,
+                    () async {
                   getPosition();
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => Course(
-                        latitude: latitude, longitude: longitude
-                      )));
+                  Navigator.pop(context);
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) =>
+                          Course(latitude: latitude, longitude: longitude)));
                 }),
               ),
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.04,
               ),
               GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => StartCourse()),
-                      (route) => false);
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => StartCourse()));
                 },
                 child: Container(
                   margin: EdgeInsets.only(right: 30),

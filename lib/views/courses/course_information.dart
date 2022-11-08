@@ -75,14 +75,14 @@ class _CourseInformationState extends State<CourseInformation> {
     }
   }
 
-  void removeItemFromLocalStorage() {
+ /*  void removeItemFromLocalStorage() {
     storage.deleteItem('latStart');
     storage.deleteItem('lngStart');
     storage.deleteItem('data');
     save.deleteItem('lat_end');
     save.deleteItem('lngEnd');
     save.deleteItem('info');
-  }
+  } */
 
   @override
   void initState() {
@@ -282,7 +282,7 @@ class _CourseInformationState extends State<CourseInformation> {
                   endLat.text = "${lat_end}";
                   endLng.text = "${lng_end}";
                   _registerTrip();
-                  removeItemFromLocalStorage();
+                  //removeItemFromLocalStorage();
                 }),
               ),
             ],

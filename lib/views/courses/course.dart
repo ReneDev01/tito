@@ -210,13 +210,12 @@ class _CourseState extends State<Course> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      //getitemFromLocalStorage();
                       getCourseStartMapsInformation();
                     },
                     child: Container(
                       margin: EdgeInsets.only(left: 20),
                       child: Text(
-                        "Nom",
+                        "Non",
                         textAlign: TextAlign.left,
                         style: GoogleFonts.poppins(
                           fontSize: 18,
@@ -227,17 +226,15 @@ class _CourseState extends State<Course> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () {
-                      /* Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => Place()),
-                          (route) => false); */
+                    onTap: () async {
+                      Navigator.pop(context);
                       tapLat != 0 && tapLng != 0
-                          ? Navigator.of(context).push(
+                          ? await Navigator.of(context).push(
                               MaterialPageRoute(
                                   builder: (context) => Place(
                                       latitude: tapLat, longitude: tapLng)),
                             )
-                          : Navigator.of(context).push(
+                          : await Navigator.of(context).push(
                               MaterialPageRoute(
                                   builder: (context) =>
                                       Place(latitude: lati, longitude: long)),
@@ -288,11 +285,11 @@ class _CourseState extends State<Course> {
                 height: 60,
                 margin: EdgeInsets.only(left: 10, right: 10),
                 child: myFlatButton2(appBackground, appBlackColor,
-                    'Choisir une adresse', appColor, () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                          builder: (context) => const EndAdress()),
-                      (route) => false);
+                    'Choisir une adresse', appColor, () async {
+                  Navigator.pop(context);
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const EndAdress()),
+                  );
                 }),
               ),
               SizedBox(
@@ -303,8 +300,9 @@ class _CourseState extends State<Course> {
                 height: 60,
                 margin: EdgeInsets.only(left: 10, right: 10),
                 child: myFlatButton2(appBlackColor, Colors.white,
-                    'Choisir un quartier', appBlackColor, () {
-                  Navigator.of(context).push(
+                    'Choisir un quartier', appBlackColor, () async {
+                  Navigator.pop(context);
+                  await Navigator.of(context).push(
                     MaterialPageRoute(
                         builder: (context) => const Neighborhood()),
                   );
@@ -318,11 +316,13 @@ class _CourseState extends State<Course> {
                 height: 60,
                 margin: EdgeInsets.only(left: 10, right: 10),
                 child: myFlatButton2(
-                    appColor, Colors.white, 'Nouvelle addresse', appColor, () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                          builder: (context) => const Destination()),
-                      (route) => false);
+                    appColor, Colors.white, 'Nouvelle addresse', appColor,
+                    () async {
+                  Navigator.pop(context);
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (context) => const Destination()),
+                  );
                 }),
               ),
               SizedBox(

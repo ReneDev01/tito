@@ -3,29 +3,35 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tito/models/adress.dart';
-import 'package:tito/views/courses/second_adress.dart';
+import 'package:tito/views/courses/adress_district_course.dart';
+import 'package:tito/views/courses/course_information.dart';
+import 'package:tito/views/courses/destination.dart';
+import 'package:tito/views/courses/neighborhood_search.dart';
+import 'package:tito/views/courses/resumer.dart';
 import 'package:tito/views/courses/second_destination.dart';
-import 'package:tito/views/courses/second_neighborhood.dart';
+import 'package:tito/views/courses/second_neighbord_search.dart';
 
 import '../../components/constante.dart';
 import '../../controllers/adress_controller.dart';
-import '../../controllers/adress_local_storage.dart';
 import '../../controllers/client_controller.dart';
+import '../../controllers/strict_adress_controller.dart';
+import '../../controllers/strict_local_storage.dart';
+import '../../models/api_response.dart';
+import '../../models/district.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 
-import '../../models/api_response.dart';
+import 'course_map_neighbord.dart';
 
-class Address extends StatefulWidget {
-  const Address({super.key});
+class SecondNeighborhood extends StatefulWidget {
+  const SecondNeighborhood({super.key});
 
   @override
-  State<Address> createState() => _AddressState();
+  State<SecondNeighborhood> createState() => _SecondNeighborhoodState();
 }
 
-class _AddressState extends State<Address> {
-  List<Adress>? adress = [];
+class _SecondNeighborhoodState extends State<SecondNeighborhood> {
+  List<District>? listDistrict = [];
   final nameText = TextEditingController();
 
   final LocalStorage storageAdress = LocalStorage('localstorage_app');
@@ -33,13 +39,13 @@ class _AddressState extends State<Address> {
   Future<void> _getLitsDistrict() async {
     String token = await getToken();
     var result = await http.get(
-      Uri.parse("http://145.239.198.239:8090/api/addresses"),
+      Uri.parse("http://145.239.198.239:8090/api/districts"),
       headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
-    adress = jsonDecode(result.body)
-        .map((item) => Adress.fromJson(item))
+    listDistrict = jsonDecode(result.body)
+        .map((item) => District.fromJson(item))
         .toList()
-        .cast<Adress>();
+        .cast<District>();
     setState(() {});
   }
 
@@ -108,10 +114,9 @@ class _AddressState extends State<Address> {
                 height: 60,
                 margin: const EdgeInsets.only(left: 10, right: 10),
                 child: myFlatButton2(appBackground, appBlackColor,
-                    'Choisir une adresse', appColor, () async {
-                  Navigator.pop(context);
-                  await Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const SecondAdress()));
+                    'Choisir une adresse', appColor, () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const SecondNeighborhood()));
                 }),
               ),
               SizedBox(
@@ -122,9 +127,8 @@ class _AddressState extends State<Address> {
                 height: 60,
                 margin: const EdgeInsets.only(left: 10, right: 10),
                 child: myFlatButton2(appBlackColor, Colors.white,
-                    'Choisir un quartier', appBlackColor, () async {
-                  Navigator.pop(context);
-                  await Navigator.of(context).push(
+                    'Choisir un quartier', appBlackColor, () {
+                  Navigator.of(context).push(
                     MaterialPageRoute(
                         builder: (context) => const SecondNeighborhood()),
                   );
@@ -138,13 +142,10 @@ class _AddressState extends State<Address> {
                 height: 60,
                 margin: const EdgeInsets.only(left: 10, right: 10),
                 child: myFlatButton2(
-                    appColor, Colors.white, 'Nouvelle addresse', appColor,
-                    () 
-                async {
+                    appColor, Colors.white, 'Nouvelle addresse', appColor, () {
                   getPosition();
-                  Navigator.pop(context);
-                  await Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const AdressDestination()));
+                  /* Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const SecondNeighborhoodDestination())); */
                 }),
               ),
               SizedBox(
@@ -163,21 +164,22 @@ class _AddressState extends State<Address> {
       appBar: AppBar(
         backgroundColor: appBlackColor,
         title: const Text('Tito TOGO'),
-        /* actions: [
+        actions: [
           // Navigate to the Search Screen
           IconButton(
               onPressed: () {
-                /* showSearch(context: context, delegate: NeighborhoodSearch()); */
+                showSearch(
+                    context: context, delegate: SecondNeighborhoodSearch());
               },
               icon: const Icon(Icons.search))
-        ], */
+        ],
       ),
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.all(20),
           child: Column(
             children: [
-              adressList(),
+              neighborhoodPlace(),
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.08,
               ),
@@ -194,8 +196,8 @@ class _AddressState extends State<Address> {
     );
   }
 
-  Widget adressList() {
-    return adress != null
+  Widget neighborhoodPlace() {
+    return listDistrict != null
         ? Container(
             margin: EdgeInsets.only(top: 15),
             width: MediaQuery.of(context).size.width,
@@ -203,18 +205,23 @@ class _AddressState extends State<Address> {
                 height: MediaQuery.of(context).size.height,
                 width: MediaQuery.of(context).size.width,
                 child: ListView.builder(
-                    itemCount: adress!.length,
+                    itemCount: listDistrict!.length,
                     scrollDirection: Axis.vertical,
                     itemBuilder: (BuildContext context, int itemIndex) =>
                         GestureDetector(
                             onTap: () async {
-                              ApiResponse response = await getAdressInfo(
-                                  int.parse("${adress![itemIndex].id}"));
-                              var address = response.data as Map;
-                              print(address['id']);
-                              addItemsAdressStore(address['id']);
-                              showInformationDialog(
-                                  context, "Adresse d'arrivé");
+                              ApiResponse response = await getStrictInfo(
+                                  int.parse("${listDistrict![itemIndex].id}"));
+                              setState(() {
+                                var adress = response.data as Map;
+                                print(adress['id']);
+                                addItemsOrderAdress(
+                                  adress['id'],
+                                );
+                              });
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      const AdressNeighboord()));
                             },
                             child: Container(
                               margin: EdgeInsets.only(bottom: 10),
@@ -237,14 +244,14 @@ class _AddressState extends State<Address> {
                                       children: [
                                         Container(
                                           child: Text(
-                                            "${adress![itemIndex].name}",
+                                            "${listDistrict![itemIndex].name}",
                                             maxLines: 2,
                                             style: GoogleFonts.poppins(
                                                 color: appBlackColor,
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.w600),
                                           ),
-                                        )
+                                        ),
                                       ],
                                     ),
                                   ),

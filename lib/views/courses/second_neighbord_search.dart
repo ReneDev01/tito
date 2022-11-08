@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tito/controllers/district_controler.dart';
+import 'package:tito/views/courses/adress_district_course.dart';
 import 'package:tito/views/courses/course_map_neighbord.dart';
 
 import '../../components/constante.dart';
@@ -9,7 +10,7 @@ import '../../controllers/strict_local_storage.dart';
 import '../../models/api_response.dart';
 import '../../models/district.dart';
 
-class NeighborhoodSearch extends SearchDelegate {
+class SecondNeighborhoodSearch extends SearchDelegate {
   FetchDistrictList _districtList = FetchDistrictList();
 
   ThemeData appBarTheme(BuildContext context) {
@@ -84,7 +85,7 @@ class NeighborhoodSearch extends SearchDelegate {
                           adress['id'],
                         );
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => const MapNeighboord()));
+                            builder: (context) => const AdressNeighboord()));
                       },
                       child: Container(
                         margin: EdgeInsets.only(bottom: 10),

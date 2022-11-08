@@ -173,8 +173,6 @@ Future<ApiResponse> getClientDetails() async {
       'Authorization': 'Bearer $token'
     });
 
-    print(response.body);
-
     switch (response.statusCode) {
       case 200:
         apiResponse.data = jsonDecode(response.body);

@@ -9,6 +9,7 @@ import 'package:tito/views/courses/address_search.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
+import 'package:tito/views/navigation.dart';
 
 import '../../../components/constante.dart';
 import '../../../controllers/auth_controller.dart';
@@ -30,7 +31,7 @@ class _AdressListState extends State<AdressList> {
     var result = await http.get(
       Uri.parse("http://145.239.198.239:8090/api/addresses"),
       headers: {
-        'Accept': 'application/json', 
+        'Accept': 'application/json',
         'Authorization': 'Bearer $token',
       },
     );
@@ -58,7 +59,13 @@ class _AdressListState extends State<AdressList> {
         title: const Text('Tito TOGO'),
         actions: [
           // Navigate to the Search Screen
-          IconButton(onPressed: () {}, icon: const Icon(Icons.home))
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => Navigation()),
+                    (route) => false);
+              },
+              icon: const Icon(Icons.home))
         ],
       ),
       body: SingleChildScrollView(
@@ -115,8 +122,8 @@ class _AdressListState extends State<AdressList> {
                                     margin: EdgeInsets.only(
                                         left: 10, right: 10, top: 15),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Container(
                                           child: Text(
@@ -136,7 +143,7 @@ class _AdressListState extends State<AdressList> {
                                           ),
                                         ),
                                       ],
-                                    ), 
+                                    ),
                                   )
                                 ],
                               ),
